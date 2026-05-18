@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Agent</title>
+  <%= csrf_meta_tags %>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; color: #222; }
+    nav { background: #1a1a1a; color: #fff; padding: 12px 24px; display: flex; gap: 20px; align-items: center; }
+    nav a { color: #ccc; text-decoration: none; }
+    nav a:hover { color: #fff; }
+    nav .title { font-weight: bold; color: #fff; margin-right: 16px; }
+    main { padding: 24px; }
+    .flash-notice { background: #d4edda; border: 1px solid #c3e6cb; padding: 10px 14px; margin-bottom: 16px; border-radius: 4px; }
+    .flash-alert  { background: #f8d7da; border: 1px solid #f5c6cb; padding: 10px 14px; margin-bottom: 16px; border-radius: 4px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    th { background: #f5f5f5; }
+    a { color: #0070f3; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+    .badge-applied       { background: #d4edda; color: #155724; }
+    .badge-failed        { background: #f8d7da; color: #721c24; }
+    .badge-pending       { background: #e2e3e5; color: #383d41; }
+    .badge-running       { background: #cce5ff; color: #004085; }
+    .badge-paused_quota  { background: #fff3cd; color: #856404; }
+    .badge-paused_captcha{ background: #fff3cd; color: #856404; }
+    .badge-skipped       { background: #e2e3e5; color: #383d41; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="title">Job Agent</span>
+    <%= link_to "Dashboard", root_path %>
+    <%= link_to "Applications", applications_path %>
+    <%= link_to "Resumes", resumes_path %>
+    <%= link_to "Sidekiq", "/sidekiq", target: "_blank" %>
+  </nav>
+  <main>
+    <% if flash[:notice] %><div class="flash-notice"><%= flash[:notice] %></div><% end %>
+    <% if flash[:alert]  %><div class="flash-alert"><%= flash[:alert] %></div><% end %>
+    <%= yield %>
+  </main>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<h2>Dashboard</h2>
+
+<p>
+  <strong>LLM usage today:</strong> <%= @llm[:used] %> / <%= @llm[:limit] %> calls
+  <% if @llm[:used] >= @llm[:limit] %> &mdash; <strong style="color:red">Quota exceeded</strong><% end %>
+</p>
+
+<table style="width:auto; margin-bottom:24px;">
+  <tr>
+    <% ::Application::STATUSES.each do |s| %>
+      <th><%= s %></th>
+    <% end %>
+    <th>total</th>
+  </tr>
+  <tr>
+    <% ::Application::STATUSES.each do |s| %>
+      <td style="text-align:center"><%= @stats[s] %></td>
+    <% end %>
+    <td style="text-align:center"><%= @stats.values.sum %></td>
+  </tr>
+</table>
+
+<%= form_with url: start_automation_path, method: :post do %>
+  <button type="submit">Start Automation Now</button>
+<% end %>
+
+<h3 style="margin-top:32px">Recent Applications</h3>
+
+<% if @recent.empty? %>
+  <p>No applications yet.</p>
+<% else %>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Title</th><th>Company</th><th>Portal</th><th>Status</th><th>Applied At</th></tr>
+    </thead>
+    <tbody>
+      <% @recent.each do |app| %>
+        <tr>
+          <td><%= link_to app.id, application_path(app) %></td>
+          <td><%= link_to app.job.title, application_path(app) %></td>
+          <td><%= app.job.company %></td>
+          <td><%= app.job.portal %></td>
+          <td><span class="badge badge-<%= app.status %>"><%= app.status %></span></td>
+          <td><%= app.applied_at&.strftime("%b %d %H:%M") || "&mdash;".html_safe %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -1,0 +1,44 @@
+<p><%= link_to "&larr; All Applications".html_safe, applications_path %></p>
+
+<h2><%= @application.job.title %></h2>
+<p>
+  <%= @application.job.company %> &mdash; <%= @application.job.portal %>
+  &mdash; <%= link_to "View job posting", @application.job.job_url, target: "_blank" %>
+</p>
+
+<table style="width:auto; margin-bottom:24px;">
+  <tr><th>Status</th><td><span class="badge badge-<%= @application.status %>"><%= @application.status %></span></td></tr>
+  <tr><th>Applied At</th><td><%= @application.applied_at&.strftime("%b %d %Y %H:%M") || "—" %></td></tr>
+  <tr><th>Retry Count</th><td><%= @application.retry_count %></td></tr>
+  <% if @application.failed_step.present? %>
+    <tr><th>Failed Step</th><td><%= @application.failed_step %></td></tr>
+  <% end %>
+  <% if @application.error_message.present? %>
+    <tr><th>Error</th><td style="color:red"><%= @application.error_message %></td></tr>
+  <% end %>
+</table>
+
+<% if @application.status == "failed" && @application.retry_count < 3 %>
+  <%= form_with url: retry_application_path(@application), method: :post do %>
+    <button type="submit">Retry This Application</button>
+  <% end %>
+<% end %>
+
+<% if @application.automation_logs.any? %>
+  <h3 style="margin-top:32px">Automation Logs</h3>
+  <table>
+    <thead>
+      <tr><th>Step</th><th>Status</th><th>Message</th><th>Time</th></tr>
+    </thead>
+    <tbody>
+      <% @application.automation_logs.order(:created_at).each do |log| %>
+        <tr>
+          <td><%= log.step %></td>
+          <td><%= log.status %></td>
+          <td><%= log.message %></td>
+          <td><%= log.created_at.strftime("%H:%M:%S") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -1,0 +1,533 @@
+You are a senior AI architect and expert Ruby on Rails + Python engineer.
+
+Help me build a local-first AI Job Application Agent for personal use.
+
+This is a hobby project running only on my local machine.
+
+Tech Stack:
+
+Backend:
+
+* Ruby on Rails API
+* Sidekiq
+* Redis
+* SQLite or PostgreSQL
+
+AI Workflow:
+
+* Python
+* LangGraph
+* LangChain
+
+Automation:
+
+* Playwright
+
+LLM:
+
+* OpenAI or Claude APIs
+
+The architecture should be modular, lightweight, extensible, and easy to debug.
+
+Avoid enterprise-level overengineering.
+
+---
+
+## MAIN GOAL
+
+The application should:
+
+1. Accept a master resume
+2. Understand job preferences
+3. Generate customized resumes
+4. Generate customized cover letters
+5. Search jobs automatically
+6. Apply automatically
+7. Upload generated resumes automatically
+8. Fill external company forms automatically
+9. Save job/application details locally
+10. Save screenshots and errors locally
+11. Retry failed applications later
+
+---
+
+## IMPORTANT REQUIREMENT
+
+I am NOT worried about authentication/authorization/security right now.
+
+Do NOT spend unnecessary effort on:
+
+* OAuth
+* JWT
+* Multi-user auth
+* RBAC
+* Enterprise security
+
+Keep the implementation simple and local-first.
+
+---
+
+## LLM API DAILY LIMIT REQUIREMENT
+
+The number of AI API calls per day MUST be configurable through environment variables.
+
+Example:
+
+* MAX_LLM_API_CALLS_PER_DAY=50
+
+The system should:
+
+1. Track all LLM API calls
+2. Store usage count locally
+3. Reset the counter daily
+4. Stop all execution once the limit is reached
+5. Skip job processing if limit exceeded
+6. Save the reason in logs/database
+
+Example log:
+"Daily LLM API limit reached. Automation stopped."
+
+The limit should apply to:
+
+* resume customization
+* cover letter generation
+* job matching
+* embeddings
+* form understanding
+* all LLM calls
+
+---
+
+## HIGH LEVEL ARCHITECTURE
+
+Rails API responsibilities:
+
+* APIs
+* Sidekiq jobs
+* DB management
+* application tracking
+* retry jobs
+* logs
+* scheduler
+* local file management
+
+Python LangGraph responsibilities:
+
+* resume parsing
+* AI orchestration
+* job ranking
+* resume customization
+* cover letter generation
+* intelligent form understanding
+
+Communication between Rails and Python:
+
+* REST API
+  or
+* Redis queue
+
+---
+
+## PORTAL-BASED DESIGN
+
+Each portal should act as a separate isolated module/node.
+
+Initially implement:
+
+* LinkedIn
+
+Future support:
+
+* Naukri
+* Indeed
+* Wellfound
+* Instahyre
+* Greenhouse
+* Lever
+
+Adding a new portal should require:a
+
+* creating a new module
+* registering the node
+
+without changing core workflow logic.
+
+---
+
+## USER FLOW
+
+STEP 1 — Upload Resume
+
+User uploads:
+
+* PDF or DOCX resume
+
+Extract:
+
+* skills
+* experience
+* education
+* projects
+* certifications
+
+Store extracted data locally.
+
+---
+
+STEP 2 — Ask Job Preferences
+
+Ask:
+
+* desired role
+* preferred tech stack
+* locations
+* remote/hybrid preference
+* salary expectations
+* years of experience
+
+Example:
+
+* Senior Backend Engineer
+* AI Engineer
+* Ruby on Rails
+* Python
+* LangGraph
+* Elasticsearch
+* Distributed Systems
+
+---
+
+STEP 3 — Additional Information
+
+Ask optional details:
+
+* hobby projects
+* certifications
+* GitHub
+* AI projects
+* leadership experience
+* open-source contributions
+
+LLM should intelligently decide:
+
+* what to include
+* what to prioritize
+
+based on the job description.
+
+---
+
+## RESUME CUSTOMIZATION ENGINE
+
+For every job:
+
+1. Read job description
+2. Extract ATS keywords
+3. Match against user profile
+4. Generate:
+
+   * customized resume
+   * custom summary
+   * tailored skills section
+   * tailored project section
+5. Generate optional cover letter
+
+Rules:
+
+* Never fabricate experience
+* Only optimize wording and relevance
+
+Generate:
+
+* PDF
+* DOCX
+
+Store generated files locally.
+
+---
+
+## LINKEDIN AUTOMATION
+
+Use Playwright.
+
+Credentials should come from:
+.env
+
+Example:
+
+* LINKEDIN_EMAIL
+* LINKEDIN_PASSWORD
+
+Implement:
+
+* login
+* session reuse
+* Easy Apply
+* job scraping
+* automatic resume upload
+* automatic cover letter upload
+* dynamic form filling
+* dropdown handling
+* checkbox/radio handling
+* multi-step forms
+* submit application
+
+Use:
+
+* randomized delays
+* retry handling
+* screenshot capture
+* fill the captcha with the screenshot
+
+Avoid aggressive bot-like behavior.
+
+---
+
+## EXTERNAL COMPANY PORTAL HANDLING
+
+If redirected from LinkedIn to an external company portal:
+
+The agent should:
+
+1. Detect the redirection
+2. Analyze form fields dynamically
+3. Automatically fill:
+
+   * name
+   * email
+   * phone
+   * LinkedIn
+   * GitHub
+   * experience
+   * notice period
+   * salary expectations
+   * sponsorship questions
+4. Upload generated resume
+5. Upload cover letter if needed
+6. Submit application automatically
+
+Use LLM assistance for:
+
+* unknown form labels
+* intelligent field mapping
+
+---
+
+## ERROR HANDLING
+
+If automation fails:
+
+Save in DB:
+
+* error message
+* failed step
+* screenshot path
+* portal URL
+* stack trace
+* retry count
+
+Examples:
+
+* captcha detected
+* upload failed
+* unsupported field
+* timeout
+* bot detection
+* validation failed
+
+Retry later if retryable.
+
+---
+
+## LANGGRAPH WORKFLOW
+
+Create nodes such as:
+
+* collect_preferences_node
+* parse_resume_node
+* search_jobs_node
+* linkedin_search_node
+* rank_jobs_node
+* customize_resume_node
+* generate_cover_letter_node
+* apply_job_node
+* external_portal_handler_node
+* save_application_node
+* error_handler_node
+* retry_failed_application_node
+
+Use:
+
+* retries
+* checkpointing
+* state persistence
+
+Keep the graph easy to understand.
+
+---
+
+## DAILY AUTOMATION FLOW
+
+Daily workflow:
+
+1. Search top 10 relevant jobs
+2. Rank jobs
+3. Generate custom resume
+4. Generate cover letter
+5. Apply automatically
+6. Save application details
+7. Save screenshots/logs
+
+Scheduling:
+
+* Sidekiq Cron
+  or
+* local cron jobs
+
+---
+
+## DATABASE TABLES
+
+users
+
+* id
+* name
+* email
+
+resumes
+
+* id
+* original_resume_path
+* customized_resume_path
+* extracted_skills
+
+jobs
+
+* id
+* portal
+* company
+* title
+* description
+* job_url
+* relevance_score
+
+applications
+
+* id
+* user_id
+* job_id
+* status
+* applied_at
+* resume_path
+* cover_letter_path
+* error_message
+* screenshot_path
+
+llm_api_usages
+
+* id
+* date
+* api_calls_count
+
+automation_logs
+
+* id
+* application_id
+* step
+* status
+* message
+
+---
+
+## LOCAL STORAGE
+
+Store locally:
+
+* resumes
+* customized resumes
+* cover letters
+* screenshots
+* logs
+* Playwright session data
+* browser state
+
+---
+
+## RAILS APIs
+
+Create Rails APIs for:
+
+* upload resume
+* start automation
+* list applications
+* retry failed applications
+* download customized resumes
+* list logs
+* check daily API usage
+
+---
+
+## PROJECT STRUCTURE
+
+rails-api/
+python-agent/
+graph/
+portals/
+linkedin/
+services/
+prompts/
+automation/
+resume_engine/
+
+---
+
+## ENV VARIABLES
+
+Generate sample .env including:
+
+OPENAI_API_KEY=
+LINKEDIN_EMAIL=
+LINKEDIN_PASSWORD=
+
+MAX_LLM_API_CALLS_PER_DAY=50
+
+MAX_JOBS_TO_APPLY_PER_DAY=10
+
+PLAYWRIGHT_HEADLESS=false
+
+---
+
+## IMPORTANT CONSTRAINTS
+
+* Local-first only
+* Single-user project
+* Keep costs minimal
+* Avoid unnecessary cloud infrastructure
+* Make debugging easy
+* Use async/background jobs where useful
+* Avoid unsafe aggressive automation
+* Never fabricate experience
+
+---
+
+## OUTPUT REQUIREMENTS
+
+Generate:
+
+1. Complete architecture
+2. Rails API implementation
+3. Sidekiq setup
+4. LangGraph implementation
+5. Playwright automation
+6. Resume customization engine
+7. LLM usage limiter implementation
+8. DB schema
+9. Scheduler setup
+10. Docker setup
+11. README
+12. Sample .env
+13. Local setup guide
+14. Retry handling
+15. Example execution workflow
+
+The entire solution should run locally on macOS/Linux using Docker or virtualenv.

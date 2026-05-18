@@ -1,0 +1,33 @@
+<h2>Resumes</h2>
+
+<%= form_with url: resumes_path, method: :post, multipart: true do |f| %>
+  <p>
+    <%= f.file_field :file, accept: ".pdf,.docx" %>
+    <%= f.submit "Upload Resume" %>
+  </p>
+<% end %>
+
+<% if @resumes.empty? %>
+  <p>No resumes uploaded yet.</p>
+<% else %>
+  <table style="margin-top: 24px;">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Filename</th>
+        <th>Active</th>
+        <th>Uploaded At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @resumes.each do |resume| %>
+        <tr>
+          <td><%= resume.id %></td>
+          <td><%= File.basename(resume.original_resume_path.to_s) %></td>
+          <td><%= resume.active? ? "Yes" : "No" %></td>
+          <td><%= resume.created_at.strftime("%b %d %Y %H:%M") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

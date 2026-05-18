@@ -1,0 +1,32 @@
+<h2>Applications</h2>
+
+<% if @applications.empty? %>
+  <p>No applications yet.</p>
+<% else %>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Title</th>
+        <th>Company</th>
+        <th>Portal</th>
+        <th>Status</th>
+        <th>Retries</th>
+        <th>Applied At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @applications.each do |app| %>
+        <tr>
+          <td><%= link_to app.id, application_path(app) %></td>
+          <td><%= link_to app.job.title, application_path(app) %></td>
+          <td><%= app.job.company %></td>
+          <td><%= app.job.portal %></td>
+          <td><span class="badge badge-<%= app.status %>"><%= app.status %></span></td>
+          <td style="text-align:center"><%= app.retry_count %></td>
+          <td><%= app.applied_at&.strftime("%b %d %H:%M") || "&mdash;".html_safe %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

@@ -1,0 +1,35 @@
+require "sidekiq/web"
+
+Rails.application.routes.draw do
+  mount Sidekiq::Web => "/sidekiq"
+  get "up" => "rails/health#show", as: :rails_health_check
+
+  root "dashboard#index"
+  post "automation/start", to: "dashboard#start_automation", as: :start_automation
+  resources :applications, only: [:index, :show] do
+    post :retry, on: :member
+  end
+  resources :resumes, only: [:index, :create]
+
+  namespace :api do
+    namespace :v1 do
+      post   "resumes",                    to: "resumes#create"
+      get    "resumes/:id/download",       to: "resumes#download", as: :resume_download
+
+      post   "automation/start",           to: "automation#start"
+
+      get    "applications",               to: "applications#index"
+      get    "applications/:id",           to: "applications#show"
+      post   "applications/:id/retry",     to: "applications#retry"
+
+      get    "logs",                       to: "logs#index"
+      get    "llm_usage",                  to: "llm_usages#index"
+
+      get    "users/:id/preferences",      to: "users#preferences"
+      get    "users/:id/active_resume",    to: "users#active_resume"
+      put    "preferences",                to: "user_preferences#create_or_update"
+
+      post   "agent/callback",             to: "agent_callback#create"
+    end
+  end
+end

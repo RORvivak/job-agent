@@ -1,0 +1,3 @@
+rails: cd rails-api && bin/rails s -p 3000
+sidekiq: cd rails-api && bundle exec sidekiq -c config/sidekiq.yml
+agent: cd python-agent && .venv/bin/python main.py
