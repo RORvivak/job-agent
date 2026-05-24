@@ -100,14 +100,21 @@ class LinkedInApplier:
             await asyncio.sleep(random.uniform(1, 2))
 
     async def _detect_external(self, page) -> str:
+        """Only return external URL if there's an explicit Apply link near the top card — not any random company link."""
         try:
-            # LinkedIn wraps external apply URLs in safety redirects
-            links = await page.locator("a[href*='linkedin.com/safety/go']").all()
+            # Look only inside the job top card for an apply link
+            top_card = page.locator(".job-details-jobs-unified-top-card__container--two-pane, .jobs-unified-top-card, .jobs-details__main-content").first
+            search_area = top_card if await top_card.count() else page
+
+            links = await search_area.locator("a[href*='linkedin.com/safety/go']").all()
             for link in links:
-                href = await link.get_attribute("href") or ""
-                decoded = self._decode_linkedin_url(href)
-                if decoded:
-                    return decoded
+                text = (await link.inner_text()).strip().lower()
+                # Only treat as external apply if the link text is apply-related
+                if any(w in text for w in ["apply", "submit"]):
+                    href = await link.get_attribute("href") or ""
+                    decoded = self._decode_linkedin_url(href)
+                    if decoded:
+                        return decoded
         except Exception:
             pass
         return ""

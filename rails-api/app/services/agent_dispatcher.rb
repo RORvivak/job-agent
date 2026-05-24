@@ -2,8 +2,8 @@ class AgentDispatcher
   TYPE_RUN   = "run_automation".freeze
   TYPE_RETRY = "retry_application".freeze
 
-  def self.dispatch_run(user_id)
-    push(type: TYPE_RUN, user_id:)
+  def self.dispatch_run(user_id, preference_ids: nil)
+    push(type: TYPE_RUN, user_id:, preference_ids:)
   end
 
   def self.dispatch_retry(user_id, application_id)

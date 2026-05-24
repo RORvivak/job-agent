@@ -1,31 +1,80 @@
-<h2>Resumes</h2>
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:20px">
+  <h2 style="margin:0">Resumes</h2>
 
-<%= form_with url: resumes_path, method: :post, multipart: true do |f| %>
-  <p>
-    <%= f.file_field :file, accept: ".pdf,.docx" %>
-    <%= f.submit "Upload Resume" %>
-  </p>
-<% end %>
+  <% if @users.count > 1 %>
+    <select onchange="window.location='/resumes?user_id='+this.value"
+      style="padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:13px">
+      <% @users.each do |u| %>
+        <option value="<%= u.id %>" <%= "selected" if u.id == @selected_user.id %>><%= u.name %></option>
+      <% end %>
+    </select>
+  <% end %>
+</div>
 
+<p style="color:#555; margin-bottom:20px; font-size:14px">
+  The agent always uses the <strong>active</strong> resume for
+  <strong><%= @selected_user.name %></strong>. Upload a new one to replace it.
+</p>
+
+<%# Upload form %>
+<div style="background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:16px; max-width:480px; margin-bottom:28px">
+  <h3 style="margin:0 0 12px">Upload Resume</h3>
+  <%= form_with url: resumes_path, method: :post, multipart: true do |f| %>
+    <input type="hidden" name="user_id" value="<%= @selected_user.id %>">
+    <div style="margin-bottom:10px">
+      <%= f.file_field :file, accept: ".pdf,.docx",
+            style: "font-size:13px; width:100%" %>
+      <p style="color:#888; font-size:12px; margin:4px 0 0">PDF or DOCX. Uploading will set this as the active resume.</p>
+    </div>
+    <button type="submit" style="background:#1a1a1a; color:#fff; padding:8px 20px; border:none; border-radius:4px; cursor:pointer; font-size:13px">
+      Upload
+    </button>
+  <% end %>
+</div>
+
+<%# Resume list %>
 <% if @resumes.empty? %>
-  <p>No resumes uploaded yet.</p>
+  <p style="color:#888">No resumes uploaded yet for <%= @selected_user.name %>.</p>
 <% else %>
-  <table style="margin-top: 24px;">
+  <table>
     <thead>
       <tr>
         <th>#</th>
         <th>Filename</th>
-        <th>Active</th>
-        <th>Uploaded At</th>
+        <th>Uploaded</th>
+        <th>Status</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <% @resumes.each do |resume| %>
         <tr>
           <td><%= resume.id %></td>
-          <td><%= File.basename(resume.original_resume_path.to_s) %></td>
-          <td><%= resume.active? ? "Yes" : "No" %></td>
-          <td><%= resume.created_at.strftime("%b %d %Y %H:%M") %></td>
+          <td style="font-family:monospace; font-size:13px"><%= File.basename(resume.original_resume_path.to_s) %></td>
+          <td style="font-size:13px"><%= resume.created_at.strftime("%b %d %Y %H:%M") %></td>
+          <td>
+            <% if resume.active? %>
+              <span class="badge badge-applied">Active</span>
+            <% else %>
+              <span class="badge badge-skipped">Inactive</span>
+            <% end %>
+          </td>
+          <td style="white-space:nowrap">
+            <% unless resume.active? %>
+              <%= form_with url: activate_resume_path(resume), method: :post, style: "display:inline" do %>
+                <button type="submit" style="background:none; border:none; color:#0070f3; cursor:pointer; font-size:13px; padding:0">
+                  Set Active
+                </button>
+              <% end %>
+              &nbsp;
+            <% end %>
+            <%= form_with url: resume_path(resume), method: :delete, style: "display:inline",
+                  data: { turbo_confirm: "Delete this resume?" } do %>
+              <button type="submit" style="background:none; border:none; color:#c00; cursor:pointer; font-size:13px; padding:0">
+                Delete
+              </button>
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>

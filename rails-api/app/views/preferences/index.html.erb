@@ -1,0 +1,55 @@
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px">
+  <h2 style="margin:0">Preference Sets</h2>
+  <%= link_to "＋ New Preference Set", new_preference_path,
+        style: "background:#1a1a1a; color:#fff; padding:8px 16px; border-radius:4px; text-decoration:none; font-size:14px" %>
+</div>
+
+<p style="color:#555; margin-bottom:20px">
+  Each active preference set runs its own job search. The agent merges all active sets when triggered.
+</p>
+
+<% if @preferences.empty? %>
+  <p>No preference sets yet. <%= link_to "Create one", new_preference_path %>.</p>
+<% else %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Roles (search keywords)</th>
+        <th>Stack</th>
+        <th>Remote</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @preferences.each do |pref| %>
+        <tr style="<%= 'opacity:0.5' unless pref.active %>">
+          <td><strong><%= pref.name %></strong></td>
+          <td><%= pref.desired_roles&.join(", ") %></td>
+          <td><%= pref.preferred_stack&.join(", ") %></td>
+          <td><%= pref.remote_preference %></td>
+          <td>
+            <span class="badge <%= pref.active ? 'badge-applied' : 'badge-skipped' %>">
+              <%= pref.active ? "Active" : "Inactive" %>
+            </span>
+          </td>
+          <td style="white-space:nowrap">
+            <%= link_to "Edit", edit_preference_path(pref) %>
+            &nbsp;
+            <%= form_with url: toggle_preference_path(pref), method: :post, style: "display:inline" do %>
+              <button type="submit" style="background:none; border:none; color:#0070f3; cursor:pointer; padding:0; font-size:14px">
+                <%= pref.active ? "Deactivate" : "Activate" %>
+              </button>
+            <% end %>
+            &nbsp;
+            <%= form_with url: preference_path(pref), method: :delete, style: "display:inline",
+                  data: { turbo_confirm: "Delete \"#{pref.name}\"?" } do %>
+              <button type="submit" style="background:none; border:none; color:#c00; cursor:pointer; padding:0; font-size:14px">Delete</button>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

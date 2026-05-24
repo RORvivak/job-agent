@@ -7,7 +7,7 @@ from loguru import logger
 
 from services.redis_client import brpop_queue
 from services.rails_client import log_step
-from graph.workflow import build_graph, build_retry_graph
+from graph.workflow import build_graph, build_retry_graph, build_remotive_graph
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
@@ -32,6 +32,7 @@ def bootstrap_state(payload: dict) -> dict:
         "user_id": payload.get("user_id"),
         "correlation_id": payload.get("correlation_id", ""),
         "application_id": payload.get("application_id") or None,
+        "preference_ids": payload.get("preference_ids") or None,
         "run_type": payload.get("type", "run_automation"),
         "errors": [],
         "step_log": [],
@@ -44,7 +45,11 @@ def run_one(payload: dict) -> None:
     correlation_id = payload.get("correlation_id", "")
     logger.info(f"Starting {run_type} | correlation_id={correlation_id} | user={payload.get('user_id')}")
 
-    graph = build_retry_graph() if run_type == "retry_application" else build_graph()
+    graph = (
+        build_retry_graph()   if run_type == "retry_application"
+        else build_remotive_graph() if run_type == "run_remotive"
+        else build_graph()
+    )
     state = bootstrap_state(payload)
 
     try:

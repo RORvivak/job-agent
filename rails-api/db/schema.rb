@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_10_000007) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_18_171627) do
   create_table "applications", force: :cascade do |t|
     t.datetime "applied_at"
     t.string "correlation_id"
@@ -76,10 +76,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_10_000007) do
   end
 
   create_table "user_preferences", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
     t.text "additional_info"
     t.datetime "created_at", null: false
     t.text "desired_roles"
     t.text "locations"
+    t.string "name", default: "Default"
     t.text "preferred_stack"
     t.string "remote_preference", default: "remote"
     t.integer "salary_max"

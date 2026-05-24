@@ -9,7 +9,14 @@ Rails.application.routes.draw do
   resources :applications, only: [:index, :show] do
     post :retry, on: :member
   end
-  resources :resumes, only: [:index, :create]
+  resources :resumes, only: [:index, :create, :destroy] do
+    post :activate, on: :member
+  end
+  resources :preferences, controller: "preferences" do
+    post :toggle, on: :member
+  end
+  get  "preferences/new",      to: "preferences#new",  as: :new_preference
+  get  "preferences/:id/edit", to: "preferences#edit", as: :edit_preference
 
   namespace :api do
     namespace :v1 do

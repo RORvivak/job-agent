@@ -19,6 +19,7 @@ class LinkedInScraper:
                 params = {"keywords": role, "location": location or ""}
                 if remote in ("remote", "hybrid"):
                     params["f_WT"] = "2"
+                params["f_LF"] = "f_EA"  # Easy Apply only
 
                 url = LINKEDIN_JOBS_URL + "?" + urlencode(params)
                 logger.info(f"[scraper] navigating to {url}")
@@ -41,7 +42,7 @@ class LinkedInScraper:
             # Wait for job list items to appear
             try:
                 await page.wait_for_selector(
-                    "li[data-occludable-job-id], li.jobs-search-results__list-item, .job-search-card",
+                    "li[data-occludable-job-id], li.jobs-search-results__list-item, div[data-job-id], .job-card-container",
                     timeout=8000
                 )
             except Exception:
@@ -61,19 +62,30 @@ class LinkedInScraper:
 
             await asyncio.sleep(1.5)
 
-            # Pull job data via JavaScript — most reliable way for occluded items
+            # Pull job data via JavaScript — f_EA URL filter already limits to Easy Apply
             jobs_data = await page.evaluate("""
                 () => {
-                    const items = document.querySelectorAll('li[data-occludable-job-id], li.jobs-search-results__list-item');
-                    return Array.from(items).map(li => {
-                        const titleEl = li.querySelector('a[href*="/jobs/view/"]') ||
-                                        li.querySelector('.job-card-list__title--link') ||
-                                        li.querySelector('.job-card-list__title') ||
-                                        li.querySelector('strong');
-                        const companyEl = li.querySelector('.job-card-container__primary-description') ||
-                                          li.querySelector('.job-card-container__company-name') ||
-                                          li.querySelector('span[class*="subtitle"]');
-                        const linkEl = li.querySelector('a[href*="/jobs/view/"]');
+                    const items = document.querySelectorAll([
+                        'li[data-occludable-job-id]',
+                        'li.jobs-search-results__list-item',
+                        'div[data-job-id]',
+                        'li[class*="jobs-search-results__list-item"]',
+                        '.job-card-container',
+                    ].join(', '));
+                    return Array.from(items).map(el => {
+                        const titleEl = el.querySelector('a[href*="/jobs/view/"]') ||
+                                        el.querySelector('.job-card-list__title--link') ||
+                                        el.querySelector('.job-card-list__title') ||
+                                        el.querySelector('[class*="job-card-list__title"]') ||
+                                        el.querySelector('strong');
+                        const companyEl = el.querySelector('.job-card-container__primary-description') ||
+                                          el.querySelector('.job-card-container__company-name') ||
+                                          el.querySelector('[class*="company-name"]') ||
+                                          el.querySelector('span[class*="subtitle"]') ||
+                                          el.querySelector('.artdeco-entity-lockup__subtitle') ||
+                                          el.querySelector('[class*="primary-description"]') ||
+                                          el.querySelector('[data-tracking-control-name*="company"] span');
+                        const linkEl = el.querySelector('a[href*="/jobs/view/"]');
                         return {
                             title: titleEl ? titleEl.innerText.trim() : '',
                             company: companyEl ? companyEl.innerText.trim() : '',

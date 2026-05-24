@@ -26,6 +26,7 @@ def run(state: JobAgentState) -> JobAgentState:
 
     try:
         llm = get_llm()
+        prefs = state.get("preferences", {})
         exp = parsed_resume.get("experience", [])
         key_exp = "; ".join([f"{e.get('title')} at {e.get('company')}" for e in exp[:3]])
         skills = ", ".join(parsed_resume.get("skills", [])[:10])
@@ -37,6 +38,7 @@ def run(state: JobAgentState) -> JobAgentState:
             resume_summary=parsed_resume.get("summary", ""),
             top_skills=skills,
             key_experience=key_exp,
+            additional_info=prefs.get("additional_info", ""),
         )
         messages = [SystemMessage(content=COVER_LETTER_SYSTEM), HumanMessage(content=prompt)]
         logger.info("[generate_cover_letter] calling LLM")

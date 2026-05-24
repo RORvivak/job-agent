@@ -20,8 +20,38 @@
   </tr>
 </table>
 
-<%= form_with url: start_automation_path, method: :post do %>
-  <button type="submit">Start Automation Now</button>
+<%= form_with url: start_automation_path, method: :post, style: "background:#f9f9f9; border:1px solid #ddd; border-radius:6px; padding:16px; max-width:500px; margin-bottom:24px" do %>
+  <div style="margin-bottom:12px">
+    <label style="display:block; font-weight:bold; margin-bottom:4px; font-size:13px">User</label>
+    <select name="user_id" style="width:100%; padding:7px; border:1px solid #ccc; border-radius:4px; font-size:13px">
+      <% @users.each do |u| %>
+        <option value="<%= u.id %>" <%= "selected" if u.id == @current_user.id %>><%= u.name %> (#<%= u.id %>)</option>
+      <% end %>
+    </select>
+  </div>
+
+  <div style="margin-bottom:14px">
+    <label style="display:block; font-weight:bold; margin-bottom:6px; font-size:13px">
+      Preference Sets <span style="font-weight:normal; color:#888">(leave all unchecked to use all active sets)</span>
+    </label>
+    <% if @active_preferences.any? %>
+      <% @active_preferences.each do |pref| %>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:13px; cursor:pointer">
+          <input type="checkbox" name="preference_ids[]" value="<%= pref.id %>">
+          <%= pref.name %>
+          <span style="color:#888; font-size:12px">(<%= pref.desired_roles&.first(2)&.join(", ") %>)</span>
+        </label>
+      <% end %>
+    <% else %>
+      <p style="color:#888; font-size:13px; margin:0">
+        No active preference sets. <%= link_to "Create one", new_preference_path %> first.
+      </p>
+    <% end %>
+  </div>
+
+  <button type="submit" style="background:#1a1a1a; color:#fff; padding:9px 20px; border:none; border-radius:4px; cursor:pointer; font-size:14px">
+    Start Automation
+  </button>
 <% end %>
 
 <h3 style="margin-top:32px">Recent Applications</h3>

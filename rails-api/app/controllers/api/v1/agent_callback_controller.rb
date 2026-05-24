@@ -21,12 +21,14 @@ module Api
           end
         when "status_update"
           application = Application.find_by(id: app_id)
-          application&.update!(
+          attrs = {
             status: params[:status],
             error_message: params[:error_message],
             screenshot_path: params[:screenshot_path],
-            failed_step: params[:failed_step]
-          )
+            failed_step: params[:failed_step],
+          }
+          attrs[:applied_at] = params[:applied_at] if params[:applied_at].present?
+          application&.update!(attrs)
         when "llm_usage"
           LlmApiUsage.increment_today!(by: params[:count].to_i)
         when "upsert_job"

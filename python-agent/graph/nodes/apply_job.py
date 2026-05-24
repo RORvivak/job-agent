@@ -5,8 +5,8 @@ from playwright.async_api import async_playwright
 
 from ..state import JobAgentState
 from portals.linkedin.applier import LinkedInApplier
-from portals.linkedin.session import get_context, save_session
-from services.rails_client import update_application
+from portals.linkedin.session import get_context, save_session, is_logged_in
+from services.rails_client import update_application, create_application
 
 
 async def _apply_async(state: JobAgentState) -> dict:
@@ -35,6 +35,12 @@ async def _apply_async(state: JobAgentState) -> dict:
     async with async_playwright() as p:
         browser, context, page = await get_context(p, user_id)
         try:
+            # Verify session is still valid before applying
+            logged = await is_logged_in(page)
+            if not logged:
+                logger.error("[apply_job] session expired or bot-detected — skipping apply. Re-run login.py.")
+                return {"error": "session_expired", "success": False}
+
             portal = job.get("portal", "linkedin")
             logger.info(f"[apply_job] applying | portal={portal} job={job.get('title')} @ {job.get('company')}")
             if portal == "linkedin":
@@ -59,6 +65,13 @@ async def _apply_async(state: JobAgentState) -> dict:
 def run(state: JobAgentState) -> JobAgentState:
     job = state.get("current_job", {})
     logger.info(f"[apply_job] starting | job={job.get('title')} @ {job.get('company')}")
+
+    if not state.get("application_id") and job:
+        app_id = create_application(state.get("user_id", 0), job, state.get("correlation_id", ""))
+        if app_id:
+            state["application_id"] = app_id
+            logger.info(f"[apply_job] application record created early | app_id={app_id}")
+
     try:
         result = asyncio.run(_apply_async(state))
         state["apply_result"] = result

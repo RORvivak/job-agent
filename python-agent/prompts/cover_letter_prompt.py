@@ -17,5 +17,6 @@ Candidate Profile:
 
 Top Skills: {top_skills}
 Key Experience: {key_experience}
+Additional Info: {additional_info}
 
 Return the cover letter as plain text, ready to paste."""

@@ -1,4 +1,5 @@
 import json
+import re
 from loguru import logger
 from langchain_core.messages import SystemMessage, HumanMessage
 
@@ -34,7 +35,9 @@ def run(state: JobAgentState) -> JobAgentState:
         logger.info("[rank_jobs] calling LLM to rank jobs")
         response = llm.invoke(messages)
 
-        ranked = json.loads(response.content)
+        raw = re.sub(r"^```(?:json)?\s*", "", response.content.strip())
+        raw = re.sub(r"\s*```$", "", raw)
+        ranked = json.loads(raw)
         job_map = {j["job_url"]: j for j in jobs}
         for r in ranked:
             if r.get("job_url") in job_map:
