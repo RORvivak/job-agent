@@ -61,16 +61,53 @@
 <% else %>
   <table>
     <thead>
-      <tr><th>#</th><th>Title</th><th>Company</th><th>Portal</th><th>Status</th><th>Applied At</th></tr>
+      <tr>
+        <th>#</th>
+        <th>Title</th>
+        <th>Company</th>
+        <th>Apply</th>
+        <th>Resume</th>
+        <th>Cover Letter</th>
+        <th>Status</th>
+        <th>Applied?</th>
+        <th>Applied At</th>
+      </tr>
     </thead>
     <tbody>
       <% @recent.each do |app| %>
         <tr>
           <td><%= link_to app.id, application_path(app) %></td>
-          <td><%= link_to app.job.title, application_path(app) %></td>
+          <td><%= app.job.title %></td>
           <td><%= app.job.company %></td>
-          <td><%= app.job.portal %></td>
+          <td>
+            <% if app.job.job_url.present? %>
+              <%= link_to "Apply →", app.job.job_url, target: "_blank", rel: "noopener" %>
+            <% end %>
+          </td>
+          <td>
+            <% if app.resume_file.attached? %>
+              <%= link_to "Resume ↓", download_resume_application_path(app) %>
+            <% else %>
+              &mdash;
+            <% end %>
+          </td>
+          <td>
+            <% if app.cover_letter_file.attached? %>
+              <%= link_to "Cover Letter ↓", download_cover_letter_application_path(app) %>
+            <% else %>
+              &mdash;
+            <% end %>
+          </td>
           <td><span class="badge badge-<%= app.status %>"><%= app.status %></span></td>
+          <td style="text-align:center">
+            <% if app.status == "ready_to_apply" %>
+              <%= form_with url: mark_applied_application_path(app), method: :post do %>
+                <input type="checkbox" onchange="this.form.submit()" title="Mark as applied">
+              <% end %>
+            <% elsif app.status == "applied" %>
+              <input type="checkbox" checked disabled title="Applied">
+            <% end %>
+          </td>
           <td><%= app.applied_at&.strftime("%b %d %H:%M") || "&mdash;".html_safe %></td>
         </tr>
       <% end %>

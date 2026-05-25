@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   post "automation/start", to: "dashboard#start_automation", as: :start_automation
   resources :applications, only: [:index, :show] do
     post :retry, on: :member
+    post :mark_applied, on: :member
+    get  :download_resume, on: :member
+    get  :download_cover_letter, on: :member
   end
   resources :resumes, only: [:index, :create, :destroy] do
     post :activate, on: :member
@@ -25,9 +28,11 @@ Rails.application.routes.draw do
 
       post   "automation/start",           to: "automation#start"
 
-      get    "applications",               to: "applications#index"
-      get    "applications/:id",           to: "applications#show"
-      post   "applications/:id/retry",     to: "applications#retry"
+      get    "applications",                        to: "applications#index"
+      get    "applications/:id",                   to: "applications#show"
+      post   "applications/:id/retry",             to: "applications#retry"
+      post   "applications/:id/upload_resume",     to: "applications#upload_resume"
+      post   "applications/:id/upload_cover_letter", to: "applications#upload_cover_letter"
 
       get    "logs",                       to: "logs#index"
       get    "llm_usage",                  to: "llm_usages#index"

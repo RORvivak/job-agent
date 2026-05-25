@@ -43,6 +43,18 @@ module Api
         app.update!(status: "pending")
         render json: { retried: true, correlation_id: }
       end
+
+      def upload_resume
+        app = Application.find(params[:id])
+        app.resume_file.attach(params[:file])
+        render json: { ok: true }
+      end
+
+      def upload_cover_letter
+        app = Application.find(params[:id])
+        app.cover_letter_file.attach(params[:file])
+        render json: { ok: true }
+      end
     end
   end
 end

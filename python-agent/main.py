@@ -7,7 +7,7 @@ from loguru import logger
 
 from services.redis_client import brpop_queue
 from services.rails_client import log_step
-from graph.workflow import build_graph, build_retry_graph, build_remotive_graph
+from graph.workflow import build_prep_graph, build_graph
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
@@ -45,11 +45,7 @@ def run_one(payload: dict) -> None:
     correlation_id = payload.get("correlation_id", "")
     logger.info(f"Starting {run_type} | correlation_id={correlation_id} | user={payload.get('user_id')}")
 
-    graph = (
-        build_retry_graph()   if run_type == "retry_application"
-        else build_remotive_graph() if run_type == "run_remotive"
-        else build_graph()
-    )
+    graph = build_prep_graph() if run_type in ("run_prep", "run_automation") else build_graph()
     state = bootstrap_state(payload)
 
     try:
@@ -63,8 +59,6 @@ def run_one(payload: dict) -> None:
 
 def main():
     logger.info(f"Job Agent starting. Listening on Redis queue: {QUEUE}")
-    main_graph = build_graph()
-    retry_graph = build_retry_graph()
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
         while _running:

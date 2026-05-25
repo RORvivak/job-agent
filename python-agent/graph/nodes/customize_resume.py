@@ -14,6 +14,7 @@ STORAGE_DIR = os.environ.get("STORAGE_DIR", "storage")
 def run(state: JobAgentState) -> JobAgentState:
     job = state.get("current_job")
     parsed_resume = state.get("parsed_resume", {})
+    prefs = state.get("preferences", {})
     user_id = state.get("user_id", 0)
     logger.info(f"[customize_resume] starting | job={job.get('title')} @ {job.get('company')}" if job else "[customize_resume] starting | no job")
 
@@ -23,7 +24,7 @@ def run(state: JobAgentState) -> JobAgentState:
 
     try:
         logger.info("[customize_resume] customizing resume via LLM")
-        customized = customize(parsed_resume, job)
+        customized = customize(parsed_resume, job, prefs)
         job_slug = job.get("title", "job").lower().replace(" ", "_")[:30]
         out_dir = Path(STORAGE_DIR) / "resumes" / str(user_id) / "customized"
         out_dir.mkdir(parents=True, exist_ok=True)

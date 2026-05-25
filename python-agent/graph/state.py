@@ -16,8 +16,4 @@ class JobAgentState(TypedDict, total=False):
     cover_letter_path: Optional[str]
     errors: list[dict]
     step_log: list[dict]
-    apply_result: Optional[dict]
-    run_type: str  # "run_automation" | "retry_application" | "run_remotive"
-    job_screenshots: list[str]
-    form_plan: dict
-    apply_url: str
+    run_type: str  # "run_prep" | "run_automation"

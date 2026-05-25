@@ -23,13 +23,27 @@ def run(state: JobAgentState) -> JobAgentState:
 
     try:
         llm = get_llm()
+
+        # Include a description excerpt per job so the LLM can rank on content
+        jobs_for_ranking = [
+            {
+                "title": j.get("title"),
+                "company": j.get("company"),
+                "job_url": j.get("job_url"),
+                "location": j.get("location", ""),
+                "description_excerpt": j.get("description", "")[:400],
+            }
+            for j in jobs
+        ]
+
         prompt = JOB_RANKER_USER.format(
             desired_roles=", ".join(prefs.get("desired_roles", [])),
-            skills=", ".join(parsed_resume.get("skills", [])[:20]),
+            skills=", ".join(parsed_resume.get("skills", [])),
             years_experience=prefs.get("years_experience", ""),
             preferred_stack=", ".join(prefs.get("preferred_stack", [])),
             remote_preference=prefs.get("remote_preference", ""),
-            jobs_json=json.dumps([{k: v for k, v in j.items() if k != "description"} for j in jobs], indent=2)[:3000],
+            additional_info=prefs.get("additional_info", ""),
+            jobs_json=json.dumps(jobs_for_ranking, indent=2)[:6000],
         )
         messages = [SystemMessage(content=JOB_RANKER_SYSTEM), HumanMessage(content=prompt)]
         logger.info("[rank_jobs] calling LLM to rank jobs")
@@ -47,7 +61,7 @@ def run(state: JobAgentState) -> JobAgentState:
                 })
         state["ranked_jobs"] = sorted(jobs, key=lambda j: j.get("relevance_score", 0), reverse=True)
         top = state["ranked_jobs"][0] if state["ranked_jobs"] else {}
-        logger.info(f"[rank_jobs] ranked | top_job={top.get('title')} @ {top.get('company')} score={top.get('relevance_score')}")
+        logger.info(f"[rank_jobs] ranked | top={top.get('title')} @ {top.get('company')} score={top.get('relevance_score')}")
     except Exception as e:
         logger.error(f"[rank_jobs] error | {e}")
         state["ranked_jobs"] = jobs

@@ -27,7 +27,9 @@ module Api
             screenshot_path: params[:screenshot_path],
             failed_step: params[:failed_step],
           }
-          attrs[:applied_at] = params[:applied_at] if params[:applied_at].present?
+          attrs[:resume_path]       = params[:resume_path]       if params[:resume_path].present?
+          attrs[:cover_letter_path] = params[:cover_letter_path] if params[:cover_letter_path].present?
+          attrs[:applied_at]        = params[:applied_at]        if params[:applied_at].present?
           application&.update!(attrs)
         when "llm_usage"
           LlmApiUsage.increment_today!(by: params[:count].to_i)
@@ -49,7 +51,7 @@ module Api
           )
           user = User.find(params[:user_id])
           application = user.applications.find_or_initialize_by(job: job)
-          application.update!(status: "running", correlation_id: params[:correlation_id])
+          application.update!(status: "ready_to_apply", correlation_id: params[:correlation_id])
           return render json: { ok: true, application_id: application.id }
         end
 

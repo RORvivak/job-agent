@@ -17,4 +17,28 @@ class ApplicationsController < WebController
       redirect_to application_path(app), notice: "Retry queued."
     end
   end
+
+  def mark_applied
+    app = @current_user.applications.find(params[:id])
+    app.update!(status: "applied", applied_at: Time.current)
+    redirect_to root_path, notice: "Marked as applied."
+  end
+
+  def download_resume
+    app = @current_user.applications.find(params[:id])
+    if app.resume_file.attached?
+      redirect_to rails_blob_path(app.resume_file, disposition: "attachment")
+    else
+      redirect_to root_path, alert: "No resume available."
+    end
+  end
+
+  def download_cover_letter
+    app = @current_user.applications.find(params[:id])
+    if app.cover_letter_file.attached?
+      redirect_to rails_blob_path(app.cover_letter_file, disposition: "attachment")
+    else
+      redirect_to root_path, alert: "No cover letter available."
+    end
+  end
 end

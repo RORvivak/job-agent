@@ -67,6 +67,38 @@ def update_application(application_id: int, **fields) -> None:
         pass
 
 
+def upload_resume(application_id: int, file_path: str) -> bool:
+    try:
+        with open(file_path, "rb") as f:
+            filename = os.path.basename(file_path)
+            with httpx.Client(base_url=_BASE, timeout=30) as c:
+                r = c.post(
+                    f"/api/v1/applications/{application_id}/upload_resume",
+                    files={"file": (filename, f, "application/pdf")},
+                    headers={"Authorization": f"Bearer {_make_jwt()}"},
+                )
+                r.raise_for_status()
+        return True
+    except Exception as e:
+        return False
+
+
+def upload_cover_letter(application_id: int, file_path: str) -> bool:
+    try:
+        with open(file_path, "rb") as f:
+            filename = os.path.basename(file_path)
+            with httpx.Client(base_url=_BASE, timeout=30) as c:
+                r = c.post(
+                    f"/api/v1/applications/{application_id}/upload_cover_letter",
+                    files={"file": (filename, f, "application/pdf")},
+                    headers={"Authorization": f"Bearer {_make_jwt()}"},
+                )
+                r.raise_for_status()
+        return True
+    except Exception as e:
+        return False
+
+
 def create_application(user_id: int, job: dict, correlation_id: str) -> int:
     try:
         data = _post("/api/v1/agent/callback", {
